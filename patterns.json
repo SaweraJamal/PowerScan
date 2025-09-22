@@ -30,5 +30,37 @@
     "description": "HTML <video> element",
     "severity": "major",
     "group": "html"
+  },
+  {
+    "id": "inline_style",
+    "name": "Inline Styles",
+    "regex": "style=",
+    "description": "Inline CSS style attributes",
+    "severity": "minor",
+    "group": "html"
+  },
+  {
+    "id": "iframe_tag",
+    "name": "<iframe> tag",
+    "regex": "<iframe",
+    "description": "HTML <iframe> element",
+    "severity": "major",
+    "group": "html"
+  },
+  {
+    "id": "canvas_tag",
+    "name": "<canvas> tag",
+    "regex": "<canvas",
+    "description": "HTML <canvas> element",
+    "severity": "major",
+    "group": "html"
+  },
+  {
+    "id": "audio_tag",
+    "name": "<audio> tag",
+    "regex": "<audio",
+    "description": "HTML <audio> element",
+    "severity": "major",
+    "group": "html"
   }
 ]
