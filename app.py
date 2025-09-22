@@ -1,10 +1,14 @@
-# app.py — Day 6 with Group By Severity or File
+# app.py — Day 6 (Group by Severity/File + Downloads)
 import streamlit as st
 import pandas as pd
 import json
 import re
 from bs4 import BeautifulSoup
 from typing import List, Dict
+import io
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
 
 st.set_page_config(page_title="Baseline Feature Checker — Day 6", layout="wide")
 
@@ -35,13 +39,13 @@ def scan_html(text: str, pattern_ids: List[str]):
     soup = BeautifulSoup(text, "lxml")
     findings = []
 
-    # Check each selected pattern
     for pid in pattern_ids:
         pat = ID_TO_PATTERN[pid]
         if pat["group"] == "html" and "<video" in pat["regex"]:
             videos = soup.find_all("video")
             if videos:
                 findings.append({
+                    "File": None,
                     "Feature": pat["name"],
                     "Severity": pat["severity"],
                     "Count": len(videos),
@@ -52,6 +56,7 @@ def scan_html(text: str, pattern_ids: List[str]):
             styled = [tag for tag in soup.find_all(True) if tag.has_attr("style")]
             if styled:
                 findings.append({
+                    "File": None,
                     "Feature": pat["name"],
                     "Severity": pat["severity"],
                     "Count": len(styled),
@@ -63,6 +68,7 @@ def scan_html(text: str, pattern_ids: List[str]):
             if matches:
                 snippet = text[matches[0].start():matches[0].end()+80]
                 findings.append({
+                    "File": None,
                     "Feature": pat["name"],
                     "Severity": pat["severity"],
                     "Count": len(matches),
@@ -85,6 +91,7 @@ def scan_file(file, pattern_ids: List[str]):
             if matches:
                 snippet = text[matches[0].start():matches[0].end()+80]
                 findings.append({
+                    "File": None,
                     "Feature": pat["name"],
                     "Severity": pat["severity"],
                     "Count": len(matches),
@@ -106,7 +113,6 @@ show_snippets = st.sidebar.checkbox("Show code snippets", True)
 severity_filter = st.sidebar.multiselect("Filter severities", ["major","minor"], default=["major","minor"])
 selected_pattern_ids = [pid for pid in selected_pattern_ids if ID_TO_PATTERN[pid]["severity"] in severity_filter]
 
-# --- Grouping option ---
 group_by = st.sidebar.radio("Group chart by:", ["File", "Severity"], index=0)
 
 # ---------------------------
@@ -118,35 +124,41 @@ uploaded_files = st.file_uploader("📂 Upload .html, .css, or .js files", type=
 if uploaded_files:
     results = []
     chart_data = []
-    severity_chart_data = []  # for severity grouping
+    severity_chart_data = []
+    all_findings_list = []
 
     for file in uploaded_files:
         name, size_kb, findings = scan_file(file, selected_pattern_ids)
         total_findings = sum(f["Count"] for f in findings)
 
+        # attach file name to each finding for export
+        for f in findings:
+            f["File"] = name
+
         results.append({"File": name, "Size (KB)": size_kb, "Findings": total_findings})
 
-        # --- group by severity counts ---
         severity_counts = {}
         for f in findings:
             sev = f["Severity"]
             severity_counts[sev] = severity_counts.get(sev, 0) + f["Count"]
-
         for sev, cnt in severity_counts.items():
             severity_chart_data.append({"File": name, "Severity": sev, "Count": cnt})
 
-        # old chart data (total only)
         chart_data.append({"File": name, "Total": total_findings})
+
+        if findings:
+            df = pd.DataFrame(findings)
+            all_findings_list.append(df)
 
         with st.expander(f"{name} — {size_kb} KB — {total_findings} findings"):
             if findings:
-                df = pd.DataFrame(findings)
+                df_disp = pd.DataFrame(findings)
 
                 def color_severity(val):
                     color = "red" if val=="major" else "orange"
                     return f"color: {color}; font-weight:bold;"
 
-                st.dataframe(df.style.applymap(color_severity, subset=["Severity"]))
+                st.dataframe(df_disp.style.applymap(color_severity, subset=["Severity"]))
 
                 if show_snippets:
                     for row in findings:
@@ -160,7 +172,7 @@ if uploaded_files:
     summary_df = pd.DataFrame(results)
     st.dataframe(summary_df)
 
-    # --- Flexible bar chart ---
+    # Flexible bar chart
     st.markdown("### 📈 Findings Chart")
     if group_by == "File":
         chart_df = pd.DataFrame(chart_data)
@@ -178,6 +190,47 @@ if uploaded_files:
             st.bar_chart(pivot_df)
         else:
             st.info("No severity data available.")
+
+    # ---------------------------
+    # Download Buttons (Excel & PDF)
+    # ---------------------------
+    if all_findings_list:
+        all_findings_df = pd.concat(all_findings_list, ignore_index=True)
+
+        # Excel download
+        excel_buffer = io.BytesIO()
+        with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
+            all_findings_df.to_excel(writer, index=False, sheet_name="Scan Results")
+        st.download_button(
+            label="📥 Download Excel Report",
+            data=excel_buffer.getvalue(),
+            file_name="scan_results.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+        # PDF download
+        pdf_buffer = io.BytesIO()
+        doc = SimpleDocTemplate(pdf_buffer)
+        styles = getSampleStyleSheet()
+        story = [Paragraph("Scan Results", styles["Title"]), Spacer(1, 12)]
+
+        data = [list(all_findings_df.columns)] + all_findings_df.values.tolist()
+        table = Table(data)
+        table.setStyle(TableStyle([
+            ("BACKGROUND", (0,0), (-1,0), colors.grey),
+            ("TEXTCOLOR", (0,0), (-1,0), colors.whitesmoke),
+            ("ALIGN", (0,0), (-1,-1), "CENTER"),
+            ("GRID", (0,0), (-1,-1), 0.5, colors.black),
+        ]))
+        story.append(table)
+        doc.build(story)
+
+        st.download_button(
+            label="📥 Download PDF Report",
+            data=pdf_buffer.getvalue(),
+            file_name="scan_results.pdf",
+            mime="application/pdf"
+        )
 
 else:
     st.info("⬆️ Upload files to start scanning.")
