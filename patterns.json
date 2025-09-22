@@ -1,0 +1,34 @@
+[
+  {
+    "id": "fetch_api",
+    "name": "Fetch API",
+    "regex": "\\bfetch\\s*\\(",
+    "description": "fetch(...) network calls",
+    "severity": "major",
+    "group": "js"
+  },
+  {
+    "id": "alert",
+    "name": "Alert()",
+    "regex": "alert\\s*\\(",
+    "description": "Use of alert() popup",
+    "severity": "minor",
+    "group": "js"
+  },
+  {
+    "id": "grid_template",
+    "name": "CSS Grid",
+    "regex": "grid-template",
+    "description": "CSS Grid layout usage",
+    "severity": "major",
+    "group": "css"
+  },
+  {
+    "id": "video_tag",
+    "name": "<video> tag",
+    "regex": "<video",
+    "description": "HTML <video> element",
+    "severity": "major",
+    "group": "html"
+  }
+]
