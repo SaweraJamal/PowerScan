@@ -16,12 +16,44 @@
     "group": "js"
   },
   {
-    "id": "grid_template",
-    "name": "CSS Grid",
-    "regex": "grid-template",
-    "description": "CSS Grid layout usage",
+    "id": "console_log",
+    "name": "console.log()",
+    "regex": "console\\.log\\s*\\(",
+    "description": "Console debugging statements",
+    "severity": "minor",
+    "group": "js"
+  },
+  {
+    "id": "eval_function",
+    "name": "eval() function",
+    "regex": "eval\\s*\\(",
+    "description": "Use of eval() is potentially dangerous",
     "severity": "major",
-    "group": "css"
+    "group": "js"
+  },
+  {
+    "id": "inline_event_handlers",
+    "name": "Inline Event Handlers",
+    "regex": "on(click|load|mouseover|submit|error)\\s*=",
+    "description": "Inline JavaScript event handlers in HTML",
+    "severity": "minor",
+    "group": "html"
+  },
+  {
+    "id": "script_tag",
+    "name": "<script> tag",
+    "regex": "<script",
+    "description": "Embedded or external script tag",
+    "severity": "major",
+    "group": "html"
+  },
+  {
+    "id": "iframe_tag",
+    "name": "<iframe> tag",
+    "regex": "<iframe",
+    "description": "HTML <iframe> element",
+    "severity": "major",
+    "group": "html"
   },
   {
     "id": "video_tag",
@@ -32,18 +64,10 @@
     "group": "html"
   },
   {
-    "id": "inline_style",
-    "name": "Inline Styles",
-    "regex": "style=",
-    "description": "Inline CSS style attributes",
-    "severity": "minor",
-    "group": "html"
-  },
-  {
-    "id": "iframe_tag",
-    "name": "<iframe> tag",
-    "regex": "<iframe",
-    "description": "HTML <iframe> element",
+    "id": "audio_tag",
+    "name": "<audio> tag",
+    "regex": "<audio",
+    "description": "HTML <audio> element",
     "severity": "major",
     "group": "html"
   },
@@ -56,11 +80,51 @@
     "group": "html"
   },
   {
-    "id": "audio_tag",
-    "name": "<audio> tag",
-    "regex": "<audio",
-    "description": "HTML <audio> element",
+    "id": "inline_style",
+    "name": "Inline Styles",
+    "regex": "style=",
+    "description": "Inline CSS style attributes",
+    "severity": "minor",
+    "group": "html"
+  },
+  {
+    "id": "css_grid",
+    "name": "CSS Grid",
+    "regex": "grid-template",
+    "description": "CSS Grid layout usage",
     "severity": "major",
+    "group": "css"
+  },
+  {
+    "id": "css_position_fixed",
+    "name": "CSS Fixed Position",
+    "regex": "position\\s*:\\s*fixed",
+    "description": "Elements with fixed positioning",
+    "severity": "minor",
+    "group": "css"
+  },
+  {
+    "id": "css_zindex_high",
+    "name": "High z-index",
+    "regex": "z-index\\s*:\\s*[5-9]\\d{2,}",
+    "description": "Elements with very high z-index",
+    "severity": "minor",
+    "group": "css"
+  },
+  {
+    "id": "dangerous_href",
+    "name": "JavaScript href",
+    "regex": "href\\s*=\\s*['\"]javascript:",
+    "description": "Links using javascript: URLs",
+    "severity": "major",
+    "group": "html"
+  },
+  {
+    "id": "deprecated_tags",
+    "name": "Deprecated Tags",
+    "regex": "<(font|center|marquee|blink)\\b",
+    "description": "Use of deprecated HTML tags",
+    "severity": "minor",
     "group": "html"
   }
 ]
