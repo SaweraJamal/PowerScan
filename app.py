@@ -77,14 +77,14 @@ severity_filter = st.sidebar.multiselect("Filter severities", ["major","minor"],
 selected_pattern_ids = [pid for pid in selected_pattern_ids if ID_TO_PATTERN[pid]["severity"] in severity_filter]
 show_snippets = st.sidebar.checkbox("Show code snippets", True)
 show_highlighted_code = st.sidebar.checkbox("Show highlighted source", True)
-
 group_by = st.sidebar.radio("Group chart by:", ["File", "Severity"], index=0)
 
 # ---------------------------
 # Main UI
 # ---------------------------
 st.title("🚀 Baseline Web Feature Checker — Day 10")
-uploaded_files = st.file_uploader("📂 Upload .html, .css, or .js files", type=["html","css","js"], accept_multiple_files=True)
+uploaded_files = st.file_uploader("📂 Upload .html, .css, or .js files",
+                                  type=["html","css","js"], accept_multiple_files=True)
 
 if uploaded_files:
     all_findings_list = []
@@ -121,7 +121,9 @@ if uploaded_files:
 
                 if show_highlighted_code:
                     st.markdown("### Highlighted Source Code")
-                    highlighted_html = highlight_patterns(text, [ID_TO_PATTERN[pid] for pid in selected_pattern_ids])
+                    highlighted_html = highlight_patterns(
+                        text, [ID_TO_PATTERN[pid] for pid in selected_pattern_ids]
+                    )
                     st.markdown(f"<pre>{highlighted_html}</pre>", unsafe_allow_html=True)
             else:
                 st.success("No selected features found in this file.")
@@ -146,18 +148,26 @@ if uploaded_files:
             st.info("No severity data available.")
 
     # ---------------------------
-    # Downloads
+    # Downloads (with auto save)
     # ---------------------------
     if all_findings_list:
         all_findings_df = pd.concat(all_findings_list, ignore_index=True)
+
+        # ✅ Automatically save the latest scan results for the Dashboard page
+        all_findings_df.to_json("scan_results.json", orient="records", indent=2)
+
         st.markdown("### ⬇️ Download Reports")
 
         # JSON
-        st.download_button("Download JSON", data=all_findings_df.to_json(orient="records", indent=2),
-                           file_name="scan_results.json")
+        st.download_button(
+            "Download JSON",
+            data=all_findings_df.to_json(orient="records", indent=2),
+            file_name="scan_results.json"
+        )
 
         # CSV
-        st.download_button("Download CSV", data=summary_df.to_csv(index=False), file_name="scan_results.csv")
+        st.download_button("Download CSV", data=summary_df.to_csv(index=False),
+                           file_name="scan_results.csv")
 
         # Excel
         excel_buffer = io.BytesIO()
@@ -192,6 +202,6 @@ if uploaded_files:
             mime="application/pdf"
         )
 
-    st.success("✅ Day 10 complete — multi-page ready with Dashboard.")
+        st.success("✅ Day 10 complete — multi-page ready with Dashboard.")
 else:
     st.info("⬆️ Upload files to start scanning.")
