@@ -1,18 +1,15 @@
-# app.py — Day 8 + Excel & PDF Download
+# app.py — Day 9
 import streamlit as st
 import pandas as pd
 import json
 import re
-import io
 from typing import List, Dict
-
-# PDF libraries
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4
+import io
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 
-st.set_page_config(page_title="Baseline Feature Checker", layout="wide")
+st.set_page_config(page_title="Baseline Feature Checker — Day 9", layout="wide")
 
 # ---------------------------
 # Load patterns dynamically
@@ -84,16 +81,18 @@ show_snippets = st.sidebar.checkbox("Show code snippets", True)
 severity_filter = st.sidebar.multiselect("Filter severities", ["major","minor"], default=["major","minor"])
 selected_pattern_ids = [pid for pid in selected_pattern_ids if ID_TO_PATTERN[pid]["severity"] in severity_filter]
 show_highlighted_code = st.sidebar.checkbox("Show highlighted source", True)
+group_by = st.sidebar.radio("Group chart by:", ["File", "Severity"], index=0)
 
 # ---------------------------
 # Main UI
 # ---------------------------
-st.title("🚀 Baseline Web Feature Checker — Day 8")
+st.title("🚀 Baseline Web Feature Checker — Day 9")
 uploaded_files = st.file_uploader("📂 Upload .html, .css, or .js files", type=["html","css","js"], accept_multiple_files=True)
 
 if uploaded_files:
     results = []
     chart_data = []
+    severity_chart_data = []
     all_findings_list = []
 
     for file in uploaded_files:
@@ -101,6 +100,14 @@ if uploaded_files:
         total_findings = sum(f["Count"] for f in findings)
         results.append({"File": name, "Size (KB)": size_kb, "Findings": total_findings})
         chart_data.append({"File": name, "Total": total_findings})
+
+        # Severity grouping for charts
+        severity_counts = {}
+        for f in findings:
+            sev = f["Severity"]
+            severity_counts[sev] = severity_counts.get(sev, 0) + f["Count"]
+        for sev, cnt in severity_counts.items():
+            severity_chart_data.append({"File": name, "Severity": sev, "Count": cnt})
 
         with st.expander(f"{name} — {size_kb} KB — {total_findings} findings"):
             if findings:
@@ -132,45 +139,49 @@ if uploaded_files:
     st.dataframe(summary_df)
 
     # Bar chart
-    st.markdown("### 📈 Features per File")
-    chart_df = pd.DataFrame(chart_data)
-    st.bar_chart(chart_df.set_index("File"))
+    st.markdown("### 📈 Findings Chart")
+    if group_by == "File":
+        chart_df = pd.DataFrame(chart_data)
+        st.bar_chart(chart_df.set_index("File"))
+    else:
+        sev_df = pd.DataFrame(severity_chart_data)
+        if not sev_df.empty:
+            pivot_df = sev_df.pivot_table(
+                index="File",
+                columns="Severity",
+                values="Count",
+                aggfunc="sum",
+                fill_value=0
+            )
+            st.bar_chart(pivot_df)
+        else:
+            st.info("No severity data available.")
 
     # ---------------------------
-    # Download buttons (JSON, CSV, Excel, PDF)
+    # Download Buttons (Excel & PDF)
     # ---------------------------
     if all_findings_list:
         all_findings_df = pd.concat(all_findings_list, ignore_index=True)
         st.markdown("### ⬇️ Download Reports")
 
-        # JSON
-        st.download_button(
-            "Download JSON",
-            data=all_findings_df.to_json(orient="records", indent=2),
-            file_name="scan_results.json"
-        )
+        # JSON & CSV
+        st.download_button("Download JSON", data=all_findings_df.to_json(orient="records", indent=2), file_name="scan_results.json")
+        st.download_button("Download CSV", data=summary_df.to_csv(index=False), file_name="scan_results.csv")
 
-        # CSV
-        st.download_button(
-            "Download CSV",
-            data=summary_df.to_csv(index=False),
-            file_name="scan_results.csv"
-        )
-
-        # Excel
+        # Excel download
         excel_buffer = io.BytesIO()
         with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
             all_findings_df.to_excel(writer, index=False, sheet_name="Scan Results")
         st.download_button(
-            label="Download Excel",
+            label="📥 Download Excel Report",
             data=excel_buffer.getvalue(),
             file_name="scan_results.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
-        # PDF
+        # PDF download
         pdf_buffer = io.BytesIO()
-        doc = SimpleDocTemplate(pdf_buffer, pagesize=A4)
+        doc = SimpleDocTemplate(pdf_buffer)
         styles = getSampleStyleSheet()
         story = [Paragraph("Scan Results", styles["Title"]), Spacer(1, 12)]
 
@@ -184,13 +195,14 @@ if uploaded_files:
         ]))
         story.append(table)
         doc.build(story)
+
         st.download_button(
-            label="Download PDF",
+            label="📥 Download PDF Report",
             data=pdf_buffer.getvalue(),
             file_name="scan_results.pdf",
             mime="application/pdf"
         )
 
-    st.success("Day 8 complete — highlighting added + Excel/PDF downloads.")
+    st.success("✅ Day 9 complete — Excel & PDF export + grouped charts added.")
 else:
     st.info("⬆️ Upload files to start scanning.")
