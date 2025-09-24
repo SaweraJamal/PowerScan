@@ -1,0 +1,51 @@
+[
+  {
+    "Feature":"Fetch API",
+    "Severity":"major",
+    "Count":1,
+    "Lines":"37",
+    "Snippet":"fetch(\"\/api\/data\").then(r => r.json()).then(console.log);\r\n\r\n    \/\/ Another alert for"
+  },
+  {
+    "Feature":"Alert()",
+    "Severity":"minor",
+    "Count":2,
+    "Lines":"36, 40",
+    "Snippet":"alert(\"Hello from Day 4 test!\");\r\n    fetch(\"\/api\/data\").then(r => r.json()).then(cons"
+  },
+  {
+    "Feature":"<video> tag",
+    "Severity":"major",
+    "Count":2,
+    "Lines":"24, 29",
+    "Snippet":"<video controls>\r\n    <source src=\"movie.mp4\" type=\"video\/mp4\">\r\n    Your browser does"
+  },
+  {
+    "Feature":"CSS Grid",
+    "Severity":"major",
+    "Count":2,
+    "Lines":"11, 15",
+    "Snippet":"grid-template-columns: 1fr 2fr;\r\n    }\r\n    .grid {\r\n      display: grid;\r\n      grid-templat"
+  },
+  {
+    "Feature":"Alert()",
+    "Severity":"minor",
+    "Count":1,
+    "Lines":"75",
+    "Snippet":"alert(\"\u2705 JavaScript is working!\");\r\n    }\r\n  <\/script>\r\n\r\n<\/body>\r\n<\/html>"
+  },
+  {
+    "Feature":"Inline Style",
+    "Severity":"minor",
+    "Count":1,
+    "Lines":"55",
+    "Snippet":"style=\"text-align:left\">\r\n      <li>HTML elements<\/li>\r\n      <li>CSS styles (gradient"
+  },
+  {
+    "Feature":"<video> tag",
+    "Severity":"major",
+    "Count":1,
+    "Lines":"63",
+    "Snippet":"<video controls>\r\n      <source src=\"https:\/\/www.w3schools.com\/html\/mov_bbb.mp4\" type="
+  }
+]
