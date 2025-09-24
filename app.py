@@ -1,18 +1,16 @@
-# app.py — Day 9
+# app.py — Day 10 (Main Scan Page)
 import streamlit as st
 import pandas as pd
-import json
-import re
+import json, re, io
 from typing import List, Dict
-import io
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 
-st.set_page_config(page_title="Baseline Feature Checker — Day 9", layout="wide")
+st.set_page_config(page_title="Baseline Checker — Day 10", layout="wide")
 
 # ---------------------------
-# Load patterns dynamically
+# Load patterns
 # ---------------------------
 with open("patterns.json", "r", encoding="utf-8") as f:
     PATTERNS: List[Dict] = json.load(f)
@@ -23,17 +21,15 @@ ID_TO_PATTERN = {p["id"]: p for p in PATTERNS}
 def decode_bytes(raw: bytes) -> str:
     try:
         return raw.decode("utf-8")
-    except Exception:
+    except:
         return raw.decode("utf-8", errors="replace")
 
 def find_matches(text: str, regex: str):
-    flags = re.IGNORECASE | re.MULTILINE
     try:
-        return list(re.finditer(regex, text, flags))
+        return list(re.finditer(regex, text, re.IGNORECASE | re.MULTILINE))
     except re.error:
         return []
 
-# ✅ Highlight matched patterns
 def highlight_patterns(text: str, selected_patterns: list) -> str:
     highlighted = text
     for pat in selected_patterns:
@@ -77,36 +73,35 @@ st.sidebar.header("Scanner Settings")
 all_feature_names = [p["name"] for p in PATTERNS]
 selected_features = st.sidebar.multiselect("Select features", all_feature_names, default=all_feature_names)
 selected_pattern_ids = [NAME_TO_ID[n] for n in selected_features]
-show_snippets = st.sidebar.checkbox("Show code snippets", True)
 severity_filter = st.sidebar.multiselect("Filter severities", ["major","minor"], default=["major","minor"])
 selected_pattern_ids = [pid for pid in selected_pattern_ids if ID_TO_PATTERN[pid]["severity"] in severity_filter]
+show_snippets = st.sidebar.checkbox("Show code snippets", True)
 show_highlighted_code = st.sidebar.checkbox("Show highlighted source", True)
+
 group_by = st.sidebar.radio("Group chart by:", ["File", "Severity"], index=0)
 
 # ---------------------------
 # Main UI
 # ---------------------------
-st.title("🚀 Baseline Web Feature Checker — Day 9")
+st.title("🚀 Baseline Web Feature Checker — Day 10")
 uploaded_files = st.file_uploader("📂 Upload .html, .css, or .js files", type=["html","css","js"], accept_multiple_files=True)
 
 if uploaded_files:
-    results = []
-    chart_data = []
-    severity_chart_data = []
     all_findings_list = []
+    summary_rows = []
+    severity_chart_data = []
+    chart_data = []
 
     for file in uploaded_files:
         name, size_kb, findings, text = scan_file(file, selected_pattern_ids)
         total_findings = sum(f["Count"] for f in findings)
-        results.append({"File": name, "Size (KB)": size_kb, "Findings": total_findings})
+        summary_rows.append({"File": name, "Size (KB)": size_kb, "Findings": total_findings})
         chart_data.append({"File": name, "Total": total_findings})
 
-        # Severity grouping for charts
-        severity_counts = {}
+        sev_counts = {}
         for f in findings:
-            sev = f["Severity"]
-            severity_counts[sev] = severity_counts.get(sev, 0) + f["Count"]
-        for sev, cnt in severity_counts.items():
+            sev_counts[f["Severity"]] = sev_counts.get(f["Severity"], 0) + f["Count"]
+        for sev, cnt in sev_counts.items():
             severity_chart_data.append({"File": name, "Severity": sev, "Count": cnt})
 
         with st.expander(f"{name} — {size_kb} KB — {total_findings} findings"):
@@ -115,8 +110,7 @@ if uploaded_files:
                 all_findings_list.append(df)
 
                 def color_severity(val):
-                    color = "red" if val=="major" else "orange"
-                    return f"color: {color}; font-weight:bold;"
+                    return f"color: {'red' if val=='major' else 'orange'}; font-weight:bold;"
 
                 st.dataframe(df.style.applymap(color_severity, subset=["Severity"]))
 
@@ -125,7 +119,6 @@ if uploaded_files:
                         st.markdown(f"**{row['Feature']}** (Lines: {row['Lines']})")
                         st.code(row["Snippet"], language="html")
 
-                # ✅ Highlighted code view
                 if show_highlighted_code:
                     st.markdown("### Highlighted Source Code")
                     highlighted_html = highlight_patterns(text, [ID_TO_PATTERN[pid] for pid in selected_pattern_ids])
@@ -133,12 +126,11 @@ if uploaded_files:
             else:
                 st.success("No selected features found in this file.")
 
-    # Summary table
+    summary_df = pd.DataFrame(summary_rows)
     st.markdown("### 📊 Summary Table")
-    summary_df = pd.DataFrame(results)
     st.dataframe(summary_df)
 
-    # Bar chart
+    # Charts
     st.markdown("### 📈 Findings Chart")
     if group_by == "File":
         chart_df = pd.DataFrame(chart_data)
@@ -147,28 +139,27 @@ if uploaded_files:
         sev_df = pd.DataFrame(severity_chart_data)
         if not sev_df.empty:
             pivot_df = sev_df.pivot_table(
-                index="File",
-                columns="Severity",
-                values="Count",
-                aggfunc="sum",
-                fill_value=0
+                index="File", columns="Severity", values="Count", aggfunc="sum", fill_value=0
             )
             st.bar_chart(pivot_df)
         else:
             st.info("No severity data available.")
 
     # ---------------------------
-    # Download Buttons (Excel & PDF)
+    # Downloads
     # ---------------------------
     if all_findings_list:
         all_findings_df = pd.concat(all_findings_list, ignore_index=True)
         st.markdown("### ⬇️ Download Reports")
 
-        # JSON & CSV
-        st.download_button("Download JSON", data=all_findings_df.to_json(orient="records", indent=2), file_name="scan_results.json")
+        # JSON
+        st.download_button("Download JSON", data=all_findings_df.to_json(orient="records", indent=2),
+                           file_name="scan_results.json")
+
+        # CSV
         st.download_button("Download CSV", data=summary_df.to_csv(index=False), file_name="scan_results.csv")
 
-        # Excel download
+        # Excel
         excel_buffer = io.BytesIO()
         with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
             all_findings_df.to_excel(writer, index=False, sheet_name="Scan Results")
@@ -179,12 +170,11 @@ if uploaded_files:
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
-        # PDF download
+        # PDF
         pdf_buffer = io.BytesIO()
         doc = SimpleDocTemplate(pdf_buffer)
         styles = getSampleStyleSheet()
         story = [Paragraph("Scan Results", styles["Title"]), Spacer(1, 12)]
-
         data = [list(all_findings_df.columns)] + all_findings_df.values.tolist()
         table = Table(data)
         table.setStyle(TableStyle([
@@ -195,7 +185,6 @@ if uploaded_files:
         ]))
         story.append(table)
         doc.build(story)
-
         st.download_button(
             label="📥 Download PDF Report",
             data=pdf_buffer.getvalue(),
@@ -203,6 +192,6 @@ if uploaded_files:
             mime="application/pdf"
         )
 
-    st.success("✅ Day 9 complete — Excel & PDF export + grouped charts added.")
+    st.success("✅ Day 10 complete — multi-page ready with Dashboard.")
 else:
     st.info("⬆️ Upload files to start scanning.")
