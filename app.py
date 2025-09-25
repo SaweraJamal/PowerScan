@@ -7,7 +7,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 
-st.set_page_config(page_title="Baseline Checker — Day 10", layout="wide")
+st.set_page_config(page_title="Baseline Checker", layout="wide")
 
 # ---------------------------
 # Load patterns
