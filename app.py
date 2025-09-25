@@ -7,7 +7,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 
-st.set_page_config(page_title="Baseline Checker", layout="wide")
+st.set_page_config(page_title="Baseline Checker — Day 10", layout="wide")
 
 # ---------------------------
 # Load patterns
@@ -82,7 +82,7 @@ group_by = st.sidebar.radio("Group chart by:", ["File", "Severity"], index=0)
 # ---------------------------
 # Main UI
 # ---------------------------
-st.title("🚀 Baseline Web Feature Checker — Day 10")
+st.title("🚀 Baseline Web Feature Checker ")
 uploaded_files = st.file_uploader("📂 Upload .html, .css, or .js files",
                                   type=["html","css","js"], accept_multiple_files=True)
 
