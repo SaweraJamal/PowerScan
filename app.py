@@ -94,6 +94,7 @@ group_by = st.sidebar.radio("Group chart by:", ["File", "Severity"], index=0)
 # Main UI
 # ---------------------------
 st.title("🚀 PowerScan")
+st.image("powerscan-icon.svg", width=100)
 st.caption("An AI-powered baseline checker for web projects to detect unsafe patterns quickly.")
 
 uploaded_files = st.file_uploader("📂 Upload .html, .css, or .js files",
