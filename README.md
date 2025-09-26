@@ -17,16 +17,19 @@
 ## 🖥 How to Run Locally
 
 1. **Clone the repository**:
+      ```bash
   
    git clone https://github.com/SaweraJamal/PowerScan.git
-   cd PowerScan
+   cd PowerScan```
 
-
-pip install -r requirements.txt
+   ```bash
+  pip install -r requirements.txt
+   ```
 Run the Streamlit app:
 
-
-streamlit run app.py
+   ```bash
+streamlit run app.py 
+```
 ✅ This will automatically install all the Python libraries listed in your requirements.txt (like Streamlit, pandas, reportlab, etc.).
 
 🌐 Live Demo
