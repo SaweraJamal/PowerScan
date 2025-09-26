@@ -4,9 +4,9 @@ import pandas as pd
 import json
 import os
 
-st.set_page_config(page_title="Dashboard — Baseline Checker", layout="wide")
+st.set_page_config(page_title="Dashboard — PowerScan", layout="wide")
 
-st.title("📊 Dashboard — Baseline Web Feature Checker")
+st.title("📊 Dashboard — PowerScan Web Feature Checker")
 
 # 🔄 Refresh button
 if st.button("🔄 Refresh Data"):

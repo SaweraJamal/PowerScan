@@ -82,7 +82,7 @@ group_by = st.sidebar.radio("Group chart by:", ["File", "Severity"], index=0)
 # ---------------------------
 # Main UI
 # ---------------------------
-st.title("🚀 Baseline Web Feature Checker ")
+st.title("🚀 PowerScan")
 uploaded_files = st.file_uploader("📂 Upload .html, .css, or .js files",
                                   type=["html","css","js"], accept_multiple_files=True)
 
