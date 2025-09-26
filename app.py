@@ -13,9 +13,21 @@ from reportlab.lib.styles import getSampleStyleSheet
 # ---------------------------
 st.set_page_config(
     page_title="PowerScan",
-    page_icon="powerscan-icon.svg",  # ← SVG favicon/logo
+    page_icon="powerscan-icon.svg",  # favicon in browser tab
     layout="wide"
 )
+
+# ---------------------------
+# Main UI: Logo + Title + Tagline
+# ---------------------------
+# Use PNG logo for the page itself
+st.markdown(
+    "<h1 style='display:flex; align-items:center;'>"
+    "<img src='powerscan-icon.png' width='50' style='margin-right:10px;'>"
+    "🚀 PowerScan</h1>",
+    unsafe_allow_html=True
+)
+st.caption("An AI-powered baseline checker for web projects to detect unsafe patterns quickly.")
 
 # ---------------------------
 # Load patterns
@@ -91,14 +103,12 @@ show_highlighted_code = st.sidebar.checkbox("Show highlighted source", True)
 group_by = st.sidebar.radio("Group chart by:", ["File", "Severity"], index=0)
 
 # ---------------------------
-# Main UI
+# Main scanning logic
 # ---------------------------
-st.title("🚀 PowerScan")
-st.image("powerscan-icon.svg", width=100)
-st.caption("An AI-powered baseline checker for web projects to detect unsafe patterns quickly.")
-
-uploaded_files = st.file_uploader("📂 Upload .html, .css, or .js files",
-                                  type=["html","css","js"], accept_multiple_files=True)
+uploaded_files = st.file_uploader(
+    "📂 Upload .html, .css, or .js files",
+    type=["html","css","js"], accept_multiple_files=True
+)
 
 if uploaded_files:
     all_findings_list = []
@@ -138,7 +148,6 @@ if uploaded_files:
                     highlighted_html = highlight_patterns(
                         text, [ID_TO_PATTERN[pid] for pid in selected_pattern_ids]
                     )
-                    # scrollable container
                     st.markdown(
                         "<div style='overflow:auto; max-height:400px; border:1px solid #ddd; padding:10px;'>"
                         + f"<pre>{highlighted_html}</pre></div>",
@@ -147,6 +156,7 @@ if uploaded_files:
             else:
                 st.success("No selected features found in this file.")
 
+    # Summary table
     summary_df = pd.DataFrame(summary_rows)
     st.markdown("### 📊 Summary Table")
     st.dataframe(summary_df)
@@ -167,28 +177,25 @@ if uploaded_files:
             st.info("No severity data available.")
 
     # ---------------------------
-    # Downloads (with auto save)
+    # Downloads (JSON / CSV / Excel / PDF)
     # ---------------------------
     if all_findings_list:
         all_findings_df = pd.concat(all_findings_list, ignore_index=True)
-
-        # ✅ Automatically save the latest scan results for the Dashboard page
         all_findings_df.to_json("scan_results.json", orient="records", indent=2)
 
         st.markdown("### ⬇️ Download Reports")
-
-        # JSON
         st.download_button(
             "Download JSON",
             data=all_findings_df.to_json(orient="records", indent=2),
             file_name="scan_results.json"
         )
 
-        # CSV
-        st.download_button("Download CSV", data=summary_df.to_csv(index=False),
-                           file_name="scan_results.csv")
+        st.download_button(
+            "Download CSV",
+            data=summary_df.to_csv(index=False),
+            file_name="scan_results.csv"
+        )
 
-        # Excel
         excel_buffer = io.BytesIO()
         with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
             all_findings_df.to_excel(writer, index=False, sheet_name="Scan Results")
@@ -199,7 +206,6 @@ if uploaded_files:
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
-        # PDF
         pdf_buffer = io.BytesIO()
         doc = SimpleDocTemplate(pdf_buffer)
         styles = getSampleStyleSheet()
