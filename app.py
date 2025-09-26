@@ -7,6 +7,7 @@ from typing import List, Dict
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
+import os
 
 # ---------------------------
 # Page config
@@ -20,13 +21,17 @@ st.set_page_config(
 # ---------------------------
 # Main UI: Logo + Title + Tagline
 # ---------------------------
-# Use PNG logo for the page itself
-st.markdown(
-    "<h1 style='display:flex; align-items:center;'>"
-    "<img src='powerscan-icon.png' width='50' style='margin-right:10px;'>"
-    "🚀 PowerScan</h1>",
-    unsafe_allow_html=True
-)
+logo_path = "powerscan-icon.png"  # Ensure this exists in the same folder as app.py
+
+if not os.path.exists(logo_path):
+    st.warning(f"Logo file not found: {logo_path}")
+else:
+    col1, col2 = st.columns([1, 8])
+    with col1:
+        st.image(logo_path, width=50)
+    with col2:
+        st.markdown("<h1>PowerScan</h1>", unsafe_allow_html=True)
+
 st.caption("An AI-powered baseline checker for web projects to detect unsafe patterns quickly.")
 
 # ---------------------------
