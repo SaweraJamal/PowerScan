@@ -1,4 +1,5 @@
-# app.py — Day 10 (Main Scan Page)
+# app.py — PowerScan (Main Scan Page)
+
 import streamlit as st
 import pandas as pd
 import json, re, io
@@ -7,7 +8,14 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 
-st.set_page_config(page_title="Baseline Checker — Day 10", layout="wide")
+# ---------------------------
+# Page config
+# ---------------------------
+st.set_page_config(
+    page_title="PowerScan",
+    page_icon="powerscan-icon.svg",  # ← SVG favicon/logo
+    layout="wide"
+)
 
 # ---------------------------
 # Load patterns
@@ -18,6 +26,9 @@ with open("patterns.json", "r", encoding="utf-8") as f:
 NAME_TO_ID = {p["name"]: p["id"] for p in PATTERNS}
 ID_TO_PATTERN = {p["id"]: p for p in PATTERNS}
 
+# ---------------------------
+# Helper functions
+# ---------------------------
 def decode_bytes(raw: bytes) -> str:
     try:
         return raw.decode("utf-8")
@@ -83,6 +94,8 @@ group_by = st.sidebar.radio("Group chart by:", ["File", "Severity"], index=0)
 # Main UI
 # ---------------------------
 st.title("🚀 PowerScan")
+st.caption("An AI-powered baseline checker for web projects to detect unsafe patterns quickly.")
+
 uploaded_files = st.file_uploader("📂 Upload .html, .css, or .js files",
                                   type=["html","css","js"], accept_multiple_files=True)
 
@@ -124,7 +137,12 @@ if uploaded_files:
                     highlighted_html = highlight_patterns(
                         text, [ID_TO_PATTERN[pid] for pid in selected_pattern_ids]
                     )
-                    st.markdown(f"<pre>{highlighted_html}</pre>", unsafe_allow_html=True)
+                    # scrollable container
+                    st.markdown(
+                        "<div style='overflow:auto; max-height:400px; border:1px solid #ddd; padding:10px;'>"
+                        + f"<pre>{highlighted_html}</pre></div>",
+                        unsafe_allow_html=True
+                    )
             else:
                 st.success("No selected features found in this file.")
 
@@ -202,6 +220,6 @@ if uploaded_files:
             mime="application/pdf"
         )
 
-        st.success("✅ Day 10 complete — multi-page ready with Dashboard.")
+        st.success("✅ Scan complete — results saved for Dashboard.")
 else:
     st.info("⬆️ Upload files to start scanning.")
