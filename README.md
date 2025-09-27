@@ -41,16 +41,19 @@ https://powerscan-zcdd8o88xm9bpuycz2ce24.streamlit.app/
 PowerScan/
 │
 ├── app.py                 # Main scanner page
+
 ├── pages/
 │   └── 1_Dashboard.py     # Dashboard page for last scan results
+
 ├── patterns.json          # Your regex patterns configuration
+
 ├── requirements.txt       # Python dependencies
+
 └── README.md              # Project description
+
 📝 Contributing
 Pull requests are welcome!
 If you’d like to add new patterns or improve the UI, open an issue or submit a PR.
 
-📄 License
-This project is licensed under the MIT License — see the LICENSE file for details.
 ## License  
 This project is licensed under the Apache License 2.0 — see the LICENSE file for details.  
