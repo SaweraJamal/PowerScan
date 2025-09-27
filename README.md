@@ -38,18 +38,18 @@ https://powerscan-zcdd8o88xm9bpuycz2ce24.streamlit.app/
 
 📂 Project Structure
 
-PowerScan/
-│
-├── app.py                 # Main scanner page
-
-├── pages/
-│   └── 1_Dashboard.py     # Dashboard page for last scan results
-
-├── patterns.json          # Your regex patterns configuration
-
-├── requirements.txt       # Python dependencies
-
-└── README.md              # Project description
+Baseline_checker_streamlit/
+ ├── .devcontainer/           # Dev container configuration
+ ├── pages/                   # Dashboard & other Streamlit pages
+ ├── .gitignore               # Git ignore rules
+ ├── LICENSE                  # Apache License 2.0
+ ├── README.md                # Project description and instructions
+ ├── app.py                   # Main Streamlit scanner app
+ ├── patterns.json            # Regex patterns configuration
+ ├── powerscan-icon.png       # App icon (PNG)
+ ├── powerscan-icon.svg       # App favicon (SVG)
+ ├── requirements.txt         # Python dependencies
+ ├── scan_results.json        # Latest scan results storage
 
 📝 Contributing
 Pull requests are welcome!
