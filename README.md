@@ -67,3 +67,6 @@ If you’d like to add new patterns or improve the UI, open an issue or submit a
 
 ## License  
 This project is licensed under the Apache License 2.0 — see the LICENSE file for details.  
+## Privacy Notice
+Uploaded files are only scanned temporarily during the session and **are not stored or shared** permanently. PowerScan performs all scanning in real time to protect user privacy.
+
